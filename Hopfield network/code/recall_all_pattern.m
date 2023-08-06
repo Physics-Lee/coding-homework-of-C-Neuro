@@ -1,5 +1,5 @@
 function ratio = recall_all_pattern(W, n_neuron, n_exp, memory_patterns, fraction_of_corrupted_bits)
-rng(123);
+
 number_of_corrupted_bits = int32(fraction_of_corrupted_bits * n_neuron);
 P = length(memory_patterns);
 P_recall = zeros(P,1);
