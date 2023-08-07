@@ -3,7 +3,7 @@ clc;clear;close all;
 %% set up
 
 % range of g
-g_range = 0:1:10;
+g_range = 0:0.5:2;
 
 % const
 tau = 20; % ms, time constant of each neuron
@@ -16,7 +16,7 @@ J_ext = J; % from ext
 J_from_E = J; % from E
 
 % time
-t_max = 200; % ms
+t_max = 1200; % ms
 dt = 0.1; % ms
 t_all = 0:dt:t_max;
 
@@ -38,7 +38,7 @@ I_id = randi([N_E+1, N_neuron],[N_neuron,C_I]); % i_th row is the idx of I neuro
 % speed of Poisson Process
 nu_thr = (V_threshold - 0) / (J*C_E*tau); % 1/ms % I think this formula is wrong!
 ratio_of_nu = 1; % 0 1 2
-nu_ext = ratio_of_nu * nu_thr; % 1/ms
+nu_ext = ratio_of_nu * nu_thr;
 
 % init
 mean_firing_rate = zeros(1,length(g_range));
@@ -60,7 +60,7 @@ for g = g_range
     count = count + 1;
 
     %% generate Poisson process for ext neurons
-    % Poisson_process_ext = generate_Poisson_process(nu_ext,t_max,N_neuron,C_ext);
+    Poisson_process_ext = generate_Poisson_process(nu_ext,t_max,N_neuron,C_ext);
 
     %% calculate V
 
@@ -75,7 +75,7 @@ for g = g_range
         for idx_neuron = 1:N_neuron
 
             % calculate dV
-            [dV,is_fire_all,is_rp] = calculate_dV(idx_neuron,is_fire_all,E_id,I_id,J_from_E,J_from_I,idx_t,tau_rp,dt,t_all,D,C_ext,C_E,C_I,nu_ext);
+            [dV,is_fire_all,is_rp] = calculate_dV(idx_neuron,is_fire_all,Poisson_process_ext,E_id,I_id,J_from_E,J_from_I,idx_t,tau_rp,dt,t_all,D,C_ext,C_E,C_I);
 
             % if the neuron is still in the refractory period
             if is_rp
@@ -100,27 +100,25 @@ for g = g_range
     %% plot the heat map of fire moments
 
     % plot
-    % is_fire_all_new = make_rp_as_firing(is_fire_all);
     heat_map_of_fire(is_fire_all,t_max,dt,g);
-    set(gcf, 'Position', get(0, 'Screensize'));
 
     % save
-    folder_path = 'F:\1_learning\class\computational neuroscience\coding homework of C Neuro\spiking neural network\result\temp';
+    folder_path = 'F:\1_learning\class\computational neuroscience\coding homework of C Neuro\spiking neural network\result\g';
     file_name = sprintf('fire moment; g = %.1f.png',g);
-    save_and_not_close_v2(folder_path,file_name);
+    save_and_close_v2(folder_path,file_name);
     file_name = sprintf('fire moment; g = %.1f.fig',g);
-    save_and_not_close_v2(folder_path,file_name);
+    save_and_close_v2(folder_path,file_name);
 
-    % %% plot the heat map of V
-    % 
-    % % plot
-    % heat_map_of_V(V,t_max,dt,g);
-    % 
-    % % save
-    % folder_path = 'F:\1_learning\class\computational neuroscience\coding homework of C Neuro\spiking neural network\result\temp';
-    % file_name = sprintf('V; g = %.1f.png',g);
-    % save_and_not_close_v2(folder_path,file_name);
-    % file_name = sprintf('V; g = %.1f.fig',g);
-    % save_and_close_v2(folder_path,file_name);
+    %% plot the heat map of V
+
+    % plot
+    heat_map_of_V(V,t_max,dt,g);
+
+    % save
+    folder_path = 'F:\1_learning\class\computational neuroscience\coding homework of C Neuro\spiking neural network\result\g';
+    file_name = sprintf('V; g = %.1f.png',g);
+    save_and_close_v2(folder_path,file_name);
+    file_name = sprintf('V; g = %.1f.fig',g);
+    save_and_close_v2(folder_path,file_name);
 
 end
