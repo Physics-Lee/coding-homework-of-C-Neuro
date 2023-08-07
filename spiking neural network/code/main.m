@@ -3,7 +3,7 @@ clc;clear;close all;
 %% set up
 
 % range of g
-g_range = 0:1:10;
+g_range = 0:5:15;
 
 % const
 tau = 20; % ms, time constant of each neuron
@@ -16,7 +16,7 @@ J_ext = J; % from ext
 J_from_E = J; % from E
 
 % time
-t_max = 200; % ms
+t_max = 1200; % ms
 dt = 0.1; % ms
 t_all = 0:dt:t_max;
 
@@ -106,6 +106,9 @@ for g = g_range
 
     % save
     folder_path = 'F:\1_learning\class\computational neuroscience\coding homework of C Neuro\spiking neural network\result\temp';
+    if ~isfolder(folder_path)
+        mkdir(folder_path)
+    end
     file_name = sprintf('fire moment; g = %.1f.png',g);
     save_and_not_close_v2(folder_path,file_name);
     file_name = sprintf('fire moment; g = %.1f.fig',g);
