@@ -1,14 +1,14 @@
 function fraction_of_perfect_recall_vs_fraction_of_corrupted_bits
 % init
 n_neuron = 400;
-range_of_fraction_of_corrupted_bits = 0.1:0.1:1;
-range_of_n_memory_pattern = 50;
+range_of_fraction_of_corrupted_bits = 0.0:0.1:0.5;
+range_of_n_memory_pattern = 30:10:70;
 legend_labels = {};
-n_exp_for_different_memory_pattern = 10;
-n_exp_for_different_corrupt = 100;
+n_exp_for_different_memory_pattern = 100; % 100
+n_exp_for_different_corrupt = 137; % 137
 
 % plot set up
-figure;
+figure(1);
 xlabel('fraction of corrupted bits');
 ylabel('fraction of perfect recalls');
 title(['number of neurons = ' num2str(n_neuron)]);
@@ -37,8 +37,14 @@ for n_memory_pattern = range_of_n_memory_pattern
         end
     end
 
+    % back to figure 1
+    figure(1);
+
     % plot
-    errorbar(range_of_fraction_of_corrupted_bits, mean(fraction_of_perfect_recall,1), std(fraction_of_perfect_recall,1));
+    mean_of_data = mean(fraction_of_perfect_recall,1);
+    std_of_data = std(fraction_of_perfect_recall,1);
+    SEM_of_data = std_of_data/sqrt(n_exp_for_different_memory_pattern);
+    errorbar(range_of_fraction_of_corrupted_bits, mean_of_data, SEM_of_data);
 
     % legend
     legend_labels{end+1} = ['number of memory patterns = ' num2str(n_memory_pattern)];
@@ -46,5 +52,46 @@ for n_memory_pattern = range_of_n_memory_pattern
 
     % update the figure now!
     drawnow;
+
+    % save
+    folder_path_main = 'F:\1_learning\class\computational neuroscience\coding homework of C Neuro\Hopfield network\result\SEM';
+    file_name_main = sprintf('number of memory patterns = %d', n_memory_pattern);
+    save_and_not_close(folder_path_main,file_name_main,'png');
+
+    % histogram for each point in the above graph
+    for j = 1:length(range_of_fraction_of_corrupted_bits)
+
+        % plot
+        figure;
+        edges = 0:0.1:1;
+        histogram(fraction_of_perfect_recall(:,j),edges,'Normalization','probability');
+
+        % label
+        xlabel('fraction of perfect recall');
+        ylabel('probability');
+        title(['fraction of corrupted bits = ' num2str(range_of_fraction_of_corrupted_bits(j))]);
+
+        % lim
+        xlim([0,1]);
+        ylim([0,1]);
+
+        % save
+        folder_path_hist = 'F:\1_learning\class\computational neuroscience\coding homework of C Neuro\Hopfield network\result\SEM';
+        file_name_hist = sprintf('fraction of corrupted bits = %.1f', range_of_fraction_of_corrupted_bits(j));
+        file_name_hist = strcat(file_name_main,';',file_name_hist,'.png');
+        save_and_close_v2(folder_path_hist,file_name_hist);
+
+    end
 end
+end
+
+function save_and_not_close(folder_path,file_name,ext_str)
+full_path = fullfile(folder_path,file_name);
+saveas(gcf,full_path,ext_str);
+end
+
+function save_and_close_v2(folder_path,file_name)
+full_path = fullfile(folder_path,file_name);
+saveas(gcf,full_path);
+close;
 end

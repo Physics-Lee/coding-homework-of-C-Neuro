@@ -4,11 +4,11 @@ prompt = "Which file do you want to see?" + newline + "1: pyramidal dendrite" + 
 file = input(prompt);
 switch file
     case 1
-        data_imported = importdata('1 pyramidal dendrite.txt');%导入数据
+        data_imported = importdata('../data/1 pyramidal dendrite.txt');
     case 2
-        data_imported = importdata('2 Purkinjie dendrite.txt');%导入数据
+        data_imported = importdata('../data/2 Purkinjie dendrite.txt');
     case 3
-        data_imported = importdata('3 arbor from larval zebrafish.txt');%导入数据
+        data_imported = importdata('../data/3 arbor from larval zebrafish.txt');
 end
 segment_index = data_imported(:,1);
 segment_type = data_imported(:,2);
@@ -36,7 +36,7 @@ switch flag
                     hold on;
                 end
             case 2
-                scatter3(X,Y,Z,segment_diameter); % scatter函数画出的是像素的大小，这意味着当放大、缩小坐标轴时，球面的大小不会改变
+                scatter3(X,Y,Z,segment_diameter);
         end
         
         % decorate
@@ -46,11 +46,11 @@ switch flag
         zlabel('z axis');
         switch file
             case 1
-                title('pyramidal dendrite');
+                title('dendrites of a pyramidal cell');
             case 2
-                title('Purkinje dendrite');
+                title('dendrites of a Purkinje cell');
             case 3
-                title('arbor from larval zebrafish');
+                title('arbors of a larval zebrafish');
         end
         
         % 按父子关系对散点图进行连线
