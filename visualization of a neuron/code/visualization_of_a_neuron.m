@@ -1,4 +1,6 @@
+%% clear
 clc;clear;close all;
+
 %% import data
 prompt = "Which file do you want to see?" + newline + "1: pyramidal dendrite" + newline + "2: Purkinje dendrite" + newline + "3: arbor from larval zebrafish \n";
 file = input(prompt);
