@@ -99,6 +99,7 @@ switch flag
 end
 
 %% calculate the average path length from a dendrite segment to the soma
+length_to_soma = zeros(1,number_of_points);
 length_to_father = zeros(1,number_of_points);
 for i = 3:number_of_points
     for j = 1:number_of_points
@@ -108,7 +109,8 @@ for i = 3:number_of_points
 
             % Euclidean Metric/Euclidean Distance
             length_to_father(i) = ((X(i)-X(j))^2+(Y(i)-Y(j))^2+(Z(i)-Z(j))^2)^(1/2);
-
+            length_to_soma(i) = length_to_father(i) + length_to_soma(j);
+            
             % a point only has 1 father
             break;
 
@@ -116,6 +118,8 @@ for i = 3:number_of_points
 
     end
 end
+mean_length_to_soma = mean(length_to_soma);
+fprintf("The average path length from a dendrite segment to the soma is %.2f um \n", mean_length_to_soma);
 
 %% calculate the spine reach zone of the Purkinje dendrite
 length_total = sum(length_to_father);
