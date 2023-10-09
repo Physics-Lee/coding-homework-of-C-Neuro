@@ -2,7 +2,7 @@ clear;clc;close all;
 
 %% constant 
 % I_e and t_max
-I_e = 100; % nA
+I_e = 84.9; % nA
 t_max = 100; % ms
 range_of_t = [0,t_max]; % ms
 
@@ -26,7 +26,7 @@ Beta_h = @(V) 1./(1+exp(-0.1.*(V+35)));
 %% use ode45 to solve ODEs
 % 4-variable-1-order linear ODEs, y(1) y(2) y(3) y(4)分别代表V n m h   
 Hodgkin_Huxley_ODEs = @(t,y)...       
-    [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e);%*10^3是为了把μA转换为nA
+    [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e); % *10^3是为了把μA转换为nA
     Alpha_n(y(1)).*(1-y(2))-Beta_n(y(1)).*y(2);
     Alpha_m(y(1)).*(1-y(3))-Beta_m(y(1)).*y(3);
     Alpha_h(y(1)).*(1-y(4))-Beta_h(y(1)).*y(4)];
@@ -35,7 +35,7 @@ Hodgkin_Huxley_ODEs = @(t,y)...
 y_0 = [-64.9964 0.3177 0.0530 0.5960]; % [-64.9964 0.3177 0.0530 0.5960] is the value of [V n m h] when Ie = 0 nA and the system enters steady state.
 
 % ode45
-[t,y] = ode45(Hodgkin_Huxley_ODEs,range_of_t,y_0); % 这一行是整个代码的核心
+[t,y] = ode45(Hodgkin_Huxley_ODEs,range_of_t,y_0); % core
 
 % find peaks
 [Vmax,tmax] = findpeaks(y(:,1),t,'MinPeakProminence',1);
@@ -80,7 +80,7 @@ switch flag
             
             % 4-variable-1-order linear ODEs, y(1) y(2) y(3) y(4)分别代表V n m h
             Hodgkin_Huxley_ODEs = @(t,y)...
-                [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e);%*10^3是为了把μA转换为nA
+                [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e); % *10^3是为了把μA转换为nA
                 Alpha_n(y(1)).*(1-y(2))-Beta_n(y(1)).*y(2);
                 Alpha_m(y(1)).*(1-y(3))-Beta_m(y(1)).*y(3);
                 Alpha_h(y(1)).*(1-y(4))-Beta_h(y(1)).*y(4)];
@@ -135,7 +135,7 @@ flag = input(prompt);
 switch flag
     case 1
         figure;
-        number_of_point_drawed_at_one_time = 100; % 我在2021夏干过如何把图片视频化，但我忘了当时怎么做的来着
+        number_of_point_drawed_at_one_time = 100;
         for i = 1:number_of_point_drawed_at_one_time:length(V) - number_of_point_drawed_at_one_time
             plot(V(i:i+number_of_point_drawed_at_one_time),n(i:i+number_of_point_drawed_at_one_time));
             hold on;
@@ -146,7 +146,7 @@ switch flag
         title('2D graph');
         
         figure;
-        number_of_point_drawed_at_one_time = 100; % 我在2021夏干过如何把图片视频化，但我忘了当时怎么做的来着
+        number_of_point_drawed_at_one_time = 100;
         for i = 1:number_of_point_drawed_at_one_time:length(V) - number_of_point_drawed_at_one_time
             plot3(V(i:i+number_of_point_drawed_at_one_time),...
                 n(i:i+number_of_point_drawed_at_one_time),...
