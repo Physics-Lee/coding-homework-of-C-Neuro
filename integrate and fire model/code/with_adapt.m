@@ -36,11 +36,8 @@ is_fire = false(1,n_currents);
 for i = 2:n_steps
 
     % save
-    V_trace(:, i) = V';
     I_adapt_trace(:, i) = I_adapt';
-
-    % update V
-    V = (1 - time_step_ratio) * V + time_step_ratio * current_values; % core
+    V_trace(:, i) = V';    
 
     % update I_adapt
     I_adapt = (1 - time_step_ratio_adapt) * I_adapt - J_adapt * is_fire;

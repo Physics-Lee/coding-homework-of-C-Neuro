@@ -1,81 +1,99 @@
-clear all;
+clc;
+clear;
+close all;
 tic
 
+% Constants
+V_threshold = 1; % s
+time_constant = 1e-2; % s
+J_adapt = 0.1;
+baseline_current = V_threshold;
 
-thresh=1; % neurons' thresholds - now all are set to the same value
-tau=1*1e-2;  % membrane time constant sec
-Ic=thresh;   % baseline applied current
+% Time step configuration
+time_step = 1e-4; % s
+time_step_ratio = time_step / time_constant;
+total_time = 10; % s
+n_steps = ceil(total_time / time_step);
 
-%% ** DECLARE your new constants here
-%% try out the values presented in teh problem set, along with ones you
-%% choose yourself...
+% Current and Neuron setup
+current_values = baseline_current + [0.001:0.001:0.01, 0.01:0.01:1];
+n_currents = length(current_values);
 
-dt=1e-4; % size of timestep in sec
-dtau=dt/tau;
+% Initialize
+spike_times = cell(1, n_currents);
+average_firing_rate = zeros(1, n_currents);
+V = zeros(1, n_currents);
+I_adapt = zeros(1, n_currents);
+n_spikes = zeros(1, n_currents);
+V_trace = zeros(n_currents, n_steps);
+I_adapt_trace = zeros(n_currents, n_steps);
 
-Ttot=0.2;  % total time in secs;
-T=ceil(Ttot/dt);  % number of timesteps
-dI=0.01*Ic;
-N_isi=2;
-II=Ic+[0.001:0.001:0.01,0.01:0.01:1];   % vector of injected currents, increasing from 1
-N=length(II);                           % N number of individual I-F neurons being simulated, each having a single current injected.
-spiketimes=cell(1,N);                   % cell array for each neuron's spiketimes
-rate=zeros(1,N);
-V=zeros(1,N);
-ispikes=zeros(1,N);                     % Total # of spikes in past history
-u=zeros(2,T);
+% Main simulation loop
+for i = 2:n_steps
 
-for k=2:T
-    u(:,k)=V([1 N])';       % u is the voltage trace of 2 neurons - one receiving minimum current, another receiving maximum current.
-    %% **insert your code for updating Ia by Euler integration here.
-    %% **you will need to initialize any new variables you create, as was
-    %% **done to integrate V below;  HINT: you will also need to add more code to
-    %% **integrate properly when the neuron crosses threshhold, and also
-    %% **obviously include Ia in the equation for updating V
-    
-    V=(1-dtau)*V+dtau*II;   % regular Euler integration
-    cross=(V>=thresh);   	% here we test for threshold crossing
-    ind=find(cross);
-    if length(ind)>0      % If there exist neurons that crossed threshold voltage, (here we update the neurons that crossed threshold)
-        V(ind)=0;           % Set the neuron's voltage to 0
-        for l=ind                                               % for all the neurons crossed threshold
-            spiketimes{l}=[spiketimes{l};dt*k];                 % Keep record of spike timing
-            ispikes(l)=ispikes(l)+1;                            % Update total number of spikes
+    % save
+    V_trace(:, i) = V';
+    I_adapt_trace(:, i) = I_adapt';
+
+    % update V
+    V = (1 - time_step_ratio) * V + time_step_ratio * current_values; % core
+
+    % Check for neurons that have crossed the threshold
+    is_fire = (V >= V_threshold);
+    neurons_fire = find(is_fire);
+
+    if ~isempty(neurons_fire)
+
+        % reset to 0
+        V(neurons_fire) = 0;
+
+        % Record spike times and count spikes
+        for neuron_idx = neurons_fire
+            spike_times{neuron_idx} = [spike_times{neuron_idx}; time_step * i];
+            n_spikes(neuron_idx) = n_spikes(neuron_idx) + 1;
         end
     end
 end
 
+% Calculate rates and instantaneous firing rates
+min_intervals = 1;
+the_first_instantaneous_firing_rate = zeros(n_currents, min_intervals);
 
+for k = 1:n_currents
+    if ~isempty(spike_times{k})
+        spikes = spike_times{k}';
+        average_firing_rate(k) = length(spikes) / total_time;
+        intervals = diff(spikes);
+        n_intervals = length(intervals);
 
-for k=1:N
-    if length(spiketimes{k})>0            % if neuron k has at least 1 spike
-        a=spiketimes{k}';                   % (in secs)
-        rate(k)=length(a)/Ttot;             % average firing rate 
-        isi=diff(a);                        % Inter-Spike-Interval
-        nn=length(isi);
-        if nn>=N_isi
-            frate(k,1:N_isi)=1./isi(1:N_isi); % instantaneous firing rate 
+        if n_intervals >= min_intervals
+            the_first_instantaneous_firing_rate(k, 1:min_intervals) = 1 ./ intervals(1:min_intervals);
         end
     end
 end
 
+% Plotting
 figure
-plot(II,rate,'b',II,frate(:,1),'r')
-xlabel('injected current (normalized)');
-ylabel('firing rate (Hz)');
-legend('average rate','1/ISI');
-title('f-I curves for non-adapting neuron');
-set(gca,'xlim',[0.9 2]);
+plot(current_values, average_firing_rate, 'b', current_values, the_first_instantaneous_firing_rate(:, 1), 'r')
+xlabel('Injected Current (normalized)');
+ylabel('Firing Rate (Hz)');
+legend('Average Rate', '1/ISI');
+title('F-I curves for non-adapting neuron');
+xlim([0.9 2]);
 
-tt=dt:dt:Ttot;
+time_vector = time_step:time_step:total_time;
 figure
-subplot(2,1,1);
-plot(tt,u(1,:)) 	% u(1,:) shows low firing rate due to small current injection
-ylabel('voltage (normalized)');
-title('Traces of two neurons');
-subplot(2,1,2);
-plot(tt,u(2,:)) 	% u(2,:) shows high firing rate due to large current injection
-xlabel('time (seconds)');
-ylabel('voltage (normalized)');
+subplot(2, 1, 1);
+plot(time_vector, V_trace(1, :));
+xlabel('Time (s)');
+ylabel('Voltage (normalized)');
+title('Voltage traces of the first neuron');
 
-simtime=toc
+subplot(2, 1, 2);
+plot(time_vector, V_trace(end, :));
+xlabel('Time (s)');
+ylabel('Voltage (normalized)');
+title('Voltage traces of the last neuron');
+
+simulation_time = toc;
+fprintf('Simulation time: %.2f seconds\n', simulation_time);
