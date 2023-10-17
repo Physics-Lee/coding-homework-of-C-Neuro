@@ -18,7 +18,6 @@ total_time = 10; % s
 n_steps = ceil(total_time / time_step);
 
 % Current and Neuron setup
-current_increments = 0.01 * baseline_current;
 current_values = baseline_current + [0.001:0.001:0.01, 0.01:0.01:1];
 n_currents = length(current_values);
 
@@ -37,7 +36,7 @@ for i = 2:n_steps
 
     % save
     I_adapt_trace(:, i) = I_adapt';
-    V_trace(:, i) = V';    
+    V_trace(:, i) = V';
 
     % update I_adapt
     I_adapt = (1 - time_step_ratio_adapt) * I_adapt - J_adapt * is_fire;
@@ -79,28 +78,80 @@ for k = 1:n_currents
     end
 end
 
-% Plotting
+%% Plot
+
+% f~I_const
 figure
 plot(current_values, average_firing_rate, 'b', current_values, the_first_instantaneous_firing_rate(:, 1), 'r')
 xlabel('Injected Current (normalized)');
 ylabel('Firing Rate (Hz)');
-legend('Average Rate', '1/ISI');
+legend('Average Rate', 'the first instantaneous firing rate');
 title('F-I curves for non-adapting neuron');
 xlim([0.9 2]);
 
+% T~I_const
+figure
+plot(current_values, 1./average_firing_rate, 'b', current_values, 1./the_first_instantaneous_firing_rate(:, 1), 'r')
+xlabel('Injected Current (normalized)');
+ylabel('T (s)');
+legend('Average T', 'first T');
+title('T~I curves for non-adapting neuron');
+xlim([0.9 2]);
+
+
+% V~t
 time_vector = time_step:time_step:total_time;
 figure
 subplot(2, 1, 1);
 plot(time_vector, V_trace(1, :));
 xlabel('Time (s)');
 ylabel('Voltage (normalized)');
-title('Voltage traces of the first neuron');
+title('Voltage trace of the first neuron');
 
 subplot(2, 1, 2);
 plot(time_vector, V_trace(end, :));
 xlabel('Time (s)');
 ylabel('Voltage (normalized)');
-title('Voltage traces of the last neuron');
+title('Voltage trace of the last neuron');
 
+%
+for neuron_id = 1:20:n_currents
+    figure;
+    plot(time_vector, V_trace(neuron_id, :));
+    xlabel('Time (s)');
+    ylabel('V (normalized)');
+    title_str = sprintf('V trace of neuron %d\n', neuron_id);
+    title(title_str);
+end
+
+% I_adapt~t
+figure
+subplot(2, 1, 1);
+neuron_id = 1;
+plot(time_vector, I_adapt_trace(neuron_id, :));
+xlabel('Time (s)');
+ylabel('I adapt (normalized)');
+title_str = sprintf('I adapt trace of neuron %d\n', neuron_id);
+title(title_str);
+
+subplot(2, 1, 2);
+neuron_id = n_currents;
+plot(time_vector, I_adapt_trace(neuron_id, :));
+xlabel('Time (s)');
+ylabel('I adapt (normalized)');
+title_str = sprintf('I adapt trace of neuron %d\n', neuron_id);
+title(title_str);
+
+%
+for neuron_id = 1:20:n_currents
+    figure;
+    plot(time_vector, I_adapt_trace(neuron_id, :));
+    xlabel('Time (s)');
+    ylabel('I adapt (normalized)');
+    title_str = sprintf('I adapt trace of neuron %d\n', neuron_id);
+    title(title_str);
+end
+
+%% disp
 simulation_time = toc;
 fprintf('Simulation time: %.2f seconds\n', simulation_time);
