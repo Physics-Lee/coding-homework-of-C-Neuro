@@ -31,7 +31,7 @@ V_trace = zeros(n_currents, n_steps);
 I_adapt_trace = zeros(n_currents, n_steps);
 is_fire = false(1,n_currents);
 
-% Main simulation loop
+%% loop to process each step
 for i = 2:n_steps
 
     % save
@@ -78,24 +78,48 @@ for k = 1:n_currents
     end
 end
 
-%% Plot
+%% disp
+simulation_time = toc;
+fprintf('Simulation time: %.2f seconds\n', simulation_time);
+
+%% calculate the period of steady state
+ratio_threshold = 0.99;
+
+% Detect peaks for all traces at once
+[peak_values, peak_indices] = cellfun(@findpeaks, num2cell(V_trace, 2), 'UniformOutput', false);
+
+% Calculate periods for each trace
+periods_cell = cellfun(@diff, peak_indices, 'UniformOutput', false);
+
+% Calculate ratios for each trace
+ratio_cell = cellfun(@(x) x(1:end-1) ./ x(2:end), periods_cell, 'UniformOutput', false);
+
+% Determine the start index of the steady state for each trace
+steady_state_start_indices = cellfun(@(x) find(x > ratio_threshold, 1), ratio_cell, 'UniformOutput', false);
+
+% Extract steady-state period for each trace
+steady_state_periods = cellfun(@(p, idx) p(idx + 1) * time_step, periods_cell, steady_state_start_indices);
+
+%% plot
 
 % f~I_const
 figure
-plot(current_values, average_firing_rate, 'b', current_values, the_first_instantaneous_firing_rate(:, 1), 'r')
+plot(current_values, average_firing_rate, 'b-o', current_values, the_first_instantaneous_firing_rate(:, 1), 'r-o')
 xlabel('Injected Current (normalized)');
 ylabel('Firing Rate (Hz)');
 legend('Average Rate', 'the first instantaneous firing rate');
-title('F-I curves for non-adapting neuron');
+title('F-I curves for adapting neuron');
 xlim([0.9 2]);
 
 % T~I_const
 figure
-plot(current_values, 1./average_firing_rate, 'b', current_values, 1./the_first_instantaneous_firing_rate(:, 1), 'r')
+plot(current_values, 1./average_firing_rate, 'b-o', current_values, 1./the_first_instantaneous_firing_rate(:, 1), 'r-o');
+hold on;
+plot(current_values, steady_state_periods, 'k-o');
 xlabel('Injected Current (normalized)');
 ylabel('T (s)');
-legend('Average T', 'first T');
-title('T~I curves for non-adapting neuron');
+legend('Average T', 'first T', 'steady T');
+title('T~I curves for adapting neuron');
 xlim([0.9 2]);
 
 
@@ -103,26 +127,29 @@ xlim([0.9 2]);
 time_vector = time_step:time_step:total_time;
 figure
 subplot(2, 1, 1);
+neuron_id = 1;
 plot(time_vector, V_trace(1, :));
 xlabel('Time (s)');
 ylabel('Voltage (normalized)');
-title('Voltage trace of the first neuron');
+title_str = sprintf('Voltage trace of neuron %d\n', neuron_id);
+title(title_str);
 
 subplot(2, 1, 2);
+neuron_id = n_currents;
 plot(time_vector, V_trace(end, :));
 xlabel('Time (s)');
 ylabel('Voltage (normalized)');
-title('Voltage trace of the last neuron');
+title_str = sprintf('Voltage trace of neuron %d\n', neuron_id);
+title(title_str);
 
-%
-for neuron_id = 1:20:n_currents
-    figure;
-    plot(time_vector, V_trace(neuron_id, :));
-    xlabel('Time (s)');
-    ylabel('V (normalized)');
-    title_str = sprintf('V trace of neuron %d\n', neuron_id);
-    title(title_str);
-end
+% for neuron_id = 1:20:n_currents
+%     figure;
+%     plot(time_vector, V_trace(neuron_id, :));
+%     xlabel('Time (s)');
+%     ylabel('V (normalized)');
+%     title_str = sprintf('V trace of neuron %d\n', neuron_id);
+%     title(title_str);
+% end
 
 % I_adapt~t
 figure
@@ -142,8 +169,7 @@ ylabel('I adapt (normalized)');
 title_str = sprintf('I adapt trace of neuron %d\n', neuron_id);
 title(title_str);
 
-%
-for neuron_id = 1:20:n_currents
+for neuron_id = 1:50:n_currents
     figure;
     plot(time_vector, I_adapt_trace(neuron_id, :));
     xlabel('Time (s)');
@@ -152,6 +178,7 @@ for neuron_id = 1:20:n_currents
     title(title_str);
 end
 
-%% disp
-simulation_time = toc;
-fprintf('Simulation time: %.2f seconds\n', simulation_time);
+%% save
+save_folder_name = sprintf('J_adapt = %.2f',J_adapt);
+save_folder_path = fullfile('../result/',save_folder_name);
+save_all_figures(save_folder_path);
