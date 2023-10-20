@@ -2,7 +2,7 @@ clear;clc;close all;
 
 %% constant 
 % I_e and t_max
-I_e = 84.9; % nA
+I_e = 84.6; % nA
 t_max = 100; % ms
 range_of_t = [0,t_max]; % ms
 
@@ -44,6 +44,7 @@ Vmin = -Vmin;
 
 % plot V
 figure;
+subplot(2,1,1);
 plot(t,y(:,1),'black');
 hold on;
 scatter(tmax,Vmax,'blueo');
@@ -54,7 +55,7 @@ title(['I_e = ' num2str(I_e) ' nA'])
 legend('V','Vmax','Vmin');
 
 % plot n m h
-figure;
+subplot(2,1,2);
 plot(t,y(:,2),'blue');
 hold on;
 plot(t,y(:,3),'green');
@@ -69,7 +70,6 @@ prompt = "Do you want to draw the graph of frequency-Ie?" + newline + "1: Yes" +
 flag = input(prompt);
 switch flag
     case 1
-        figure;
         count = 0;
         range_of_I_e = 100:10:700;
         T = zeros(1,length(range_of_I_e));
@@ -100,9 +100,10 @@ switch flag
         end
         I_e = range_of_I_e;
         figure;
-        plot(I_e,f,'black-o');
+        plot(I_e,f,'black');
         xlabel('Ie (nA）');
         ylabel('f (kHz）');
+        title('f vs Ie')
     case 0
 end
 

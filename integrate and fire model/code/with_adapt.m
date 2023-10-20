@@ -7,7 +7,7 @@ tic
 V_threshold = 1; % s
 time_constant = 1e-2; % s
 time_constant_adapt = 0.2; % s
-J_adapt = 0.1;
+J_adapt = 1;
 baseline_current = V_threshold;
 
 % Time step configuration
@@ -104,7 +104,7 @@ steady_state_periods = cellfun(@(p, idx) p(idx + 1) * time_step, periods_cell, s
 
 % f~I_const
 figure
-plot(current_values, average_firing_rate, 'b-o', current_values, the_first_instantaneous_firing_rate(:, 1), 'r-o')
+plot(current_values, average_firing_rate, 'b', current_values, the_first_instantaneous_firing_rate(:, 1), 'r')
 xlabel('Injected Current (normalized)');
 ylabel('Firing Rate (Hz)');
 legend('Average Rate', 'the first instantaneous firing rate');
@@ -113,9 +113,9 @@ xlim([0.9 2]);
 
 % T~I_const
 figure
-plot(current_values, 1./average_firing_rate, 'b-o', current_values, 1./the_first_instantaneous_firing_rate(:, 1), 'r-o');
+plot(current_values, 1./average_firing_rate, 'b', current_values, 1./the_first_instantaneous_firing_rate(:, 1), 'r');
 hold on;
-plot(current_values, steady_state_periods, 'k-o');
+plot(current_values, steady_state_periods, 'k');
 xlabel('Injected Current (normalized)');
 ylabel('T (s)');
 legend('Average T', 'first T', 'steady T');

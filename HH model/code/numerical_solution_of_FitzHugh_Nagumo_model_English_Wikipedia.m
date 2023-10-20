@@ -37,7 +37,7 @@ step = 0.1; % empirical
 [x_1,y_1] = meshgrid(-V_range:step:V_range,-1:step:2); % x_1代表V，y_1代表w
 V_derivative = -1/3*x_1.^3 + x_1 - y_1 + I;
 w_derivative = 1/t_0 * (x_1 + a - b*y_1);
-quiver(x_1,y_1,V_derivative,w_derivative,'blue');e
+quiver(x_1,y_1,V_derivative,w_derivative,'blue');
 
 % draw nullclines by ploting implicit function
 V_derivative_syms = @(V,w) -1/3*V^3 + V - w + I;
