@@ -24,9 +24,9 @@ Alpha_h = @(V) 0.07.*exp(-0.05.*(V+65));
 Beta_h = @(V) 1./(1+exp(-0.1.*(V+35)));
 
 %% use ode45 to solve ODEs
-% 4-variable-1-order linear ODEs, y(1) y(2) y(3) y(4)分别代表V n m h   
+% 4-variable-1-order linear ODEs, where y(1) y(2) y(3) y(4) represents V n m h   
 Hodgkin_Huxley_ODEs = @(t,y)...       
-    [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e); % *10^3是为了把μA转换为nA
+    [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e); % *10^3 will convert μA to nA
     Alpha_n(y(1)).*(1-y(2))-Beta_n(y(1)).*y(2);
     Alpha_m(y(1)).*(1-y(3))-Beta_m(y(1)).*y(3);
     Alpha_h(y(1)).*(1-y(4))-Beta_h(y(1)).*y(4)];
@@ -75,12 +75,12 @@ switch flag
         T = zeros(1,length(range_of_I_e));
         f = zeros(1,length(range_of_I_e));
         range_of_t = [0,t_max];
-        for I_e = range_of_I_e % 由第1问的分析可知，Ie在70-700nA时产生动作电位，故步长取为10nA较为合适
+        for I_e = range_of_I_e
             count = count+1;
             
-            % 4-variable-1-order linear ODEs, y(1) y(2) y(3) y(4)分别代表V n m h
+            % ODE
             Hodgkin_Huxley_ODEs = @(t,y)...
-                [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e); % *10^3是为了把μA转换为nA
+                [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e);
                 Alpha_n(y(1)).*(1-y(2))-Beta_n(y(1)).*y(2);
                 Alpha_m(y(1)).*(1-y(3))-Beta_m(y(1)).*y(3);
                 Alpha_h(y(1)).*(1-y(4))-Beta_h(y(1)).*y(4)];
@@ -94,7 +94,7 @@ switch flag
             % find peaks
             [~,tmax] = findpeaks(y(:,1),t,'MinPeakProminence',1);
             trial = 5; % only_use_1_trial_to_estimate
-            T(count) = tmax(trial) - tmax(trial - 1); % 观察第1问的V-Ie图像可知，最开始的几个峰之间的间隔并不稳定，但5个以后的峰的间隔就快速趋于稳定。
+            T(count) = tmax(trial) - tmax(trial - 1);
             f(count) = 1 / T(count);
             
         end
