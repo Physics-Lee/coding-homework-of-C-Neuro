@@ -4,22 +4,22 @@ close all;
 tic
 
 % Constants
-V_threshold = 1; % s
-time_constant = 1e-2; % s
-time_constant_adapt = 0.2; % s
-J_adapt = 1;
-baseline_current = V_threshold;
+V_threshold = 1; % dimensionless
+tau = 1e-2; % s
+tau_adapt = 0.2; % s
+J_adapt = 1; % dimensionless
+baseline_current = V_threshold; % dimensionless
 
 % Time step configuration
 time_step = 1e-4; % s
-time_step_ratio = time_step / time_constant;
-time_step_ratio_adapt = time_step / time_constant_adapt;
+time_step_ratio = time_step / tau;
+time_step_ratio_adapt = time_step / tau_adapt;
 total_time = 10; % s
 n_steps = ceil(total_time / time_step);
 
 % Current and Neuron setup
-current_values = baseline_current + [0.001:0.001:0.01, 0.01:0.01:1];
-n_currents = length(current_values);
+range_of_I_e = baseline_current + [0.001:0.001:0.01, 0.01:0.01:1]; % dimensionless
+n_currents = length(range_of_I_e);
 
 % Initialize
 spike_times = cell(1, n_currents);
@@ -42,7 +42,7 @@ for i = 2:n_steps
     I_adapt = (1 - time_step_ratio_adapt) * I_adapt - J_adapt * is_fire;
 
     % update V_adapt
-    V = (1 - time_step_ratio) * V + time_step_ratio * (current_values + I_adapt);
+    V = (1 - time_step_ratio) * V + time_step_ratio * (range_of_I_e + I_adapt);
 
     % Check for neurons that have crossed the threshold
     is_fire = (V >= V_threshold);
@@ -100,28 +100,43 @@ steady_state_start_indices = cellfun(@(x) find(x > ratio_threshold, 1), ratio_ce
 % Extract steady-state period for each trace
 steady_state_periods = cellfun(@(p, idx) p(idx + 1) * time_step, periods_cell, steady_state_start_indices);
 
+%% numerical solution of the algebraic equation
+f_theory = numerical_solution_of_algebraic_equation(tau,tau_adapt,J_adapt,range_of_I_e);
+
 %% plot
 
-% f~I_const
+% f~I_e
 figure
-plot(current_values, average_firing_rate, 'b', current_values, the_first_instantaneous_firing_rate(:, 1), 'r')
+plot(range_of_I_e, average_firing_rate, 'b', range_of_I_e, the_first_instantaneous_firing_rate(:, 1), 'r')
 xlabel('Injected Current (normalized)');
 ylabel('Firing Rate (Hz)');
-legend('Average Rate', 'the first instantaneous firing rate');
 title('F-I curves for adapting neuron');
 xlim([0.9 2]);
-
-% T~I_const
-figure
-plot(current_values, 1./average_firing_rate, 'b', current_values, 1./the_first_instantaneous_firing_rate(:, 1), 'r');
 hold on;
-plot(current_values, steady_state_periods, 'k');
+plot(range_of_I_e, f_theory, 'k');
+legend('Average Rate', 'the first instantaneous firing rate', 'f theory');
+
+% f~I_e
+figure
+plot(range_of_I_e, average_firing_rate, 'b')
+xlabel('Injected Current (normalized)');
+ylabel('Firing Rate (Hz)');
+title('F-I curves for adapting neuron');
+xlim([0.9 2]);
+hold on;
+plot(range_of_I_e, f_theory, 'k');
+legend('Average Rate', 'f theory');
+
+% T~I_e
+figure
+plot(range_of_I_e, 1./average_firing_rate, 'b', range_of_I_e, 1./the_first_instantaneous_firing_rate(:, 1), 'r');
+hold on;
+plot(range_of_I_e, steady_state_periods, 'k');
 xlabel('Injected Current (normalized)');
 ylabel('T (s)');
 legend('Average T', 'first T', 'steady T');
 title('T~I curves for adapting neuron');
 xlim([0.9 2]);
-
 
 % V~t
 time_vector = time_step:time_step:total_time;
@@ -179,6 +194,6 @@ for neuron_id = 1:50:n_currents
 end
 
 %% save
-save_folder_name = sprintf('J_adapt = %.2f',J_adapt);
-save_folder_path = fullfile('../result/',save_folder_name);
-save_all_figures(save_folder_path);
+% save_folder_name = sprintf('J_adapt = %.2f',J_adapt);
+% save_folder_path = fullfile('../result/',save_folder_name);
+% save_all_figures(save_folder_path);
