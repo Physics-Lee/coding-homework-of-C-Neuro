@@ -71,7 +71,7 @@ flag = input(prompt);
 switch flag
     case 1
         count = 0;
-        range_of_I_e = [50:10:2000];
+        range_of_I_e = 50:10:2000;
         T = zeros(1,length(range_of_I_e));
         f = zeros(1,length(range_of_I_e));
         range_of_t = [0,t_max];
@@ -133,7 +133,7 @@ switch flag
     case 0
 end
 
-% video-lize the image
+%% video-lize the image
 prompt = "Do you want to video-lize the phase graph?" + newline + "1: Yes" + newline + "2: No \n";
 flag = input(prompt);
 switch flag
