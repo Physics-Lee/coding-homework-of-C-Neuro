@@ -27,8 +27,8 @@ for i = 1:length(J_adapt_values)
 end
 
 % label, title, legend, lim
-xlabel('Range of I_e');
-ylabel('f_{theory}');
+xlabel('I_e (no dimension)');
+ylabel('f_{theory} (Hz)');
 title('f_{theory} for different J_{adapt} values');
 legend('show');
 xlim([0.9,max(range_of_I_e)]);

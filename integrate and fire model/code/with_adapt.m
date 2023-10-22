@@ -39,7 +39,7 @@ for i = 2:n_steps
     V_trace(:, i) = V';
 
     % update I_adapt
-    I_adapt = (1 - time_step_ratio_adapt) * I_adapt - J_adapt * is_fire;
+    I_adapt = (1 - time_step_ratio_adapt) * I_adapt - J_adapt * is_fire; % core
 
     % update V_adapt
     V = (1 - time_step_ratio) * V + time_step_ratio * (range_of_I_e + I_adapt);

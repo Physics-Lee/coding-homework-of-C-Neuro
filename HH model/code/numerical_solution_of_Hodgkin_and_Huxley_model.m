@@ -2,7 +2,7 @@ clear;clc;close all;
 
 %% constant
 % I_e and t_max
-I_e = 84.6*10^1; % nA
+I_e = 100; % nA
 t_max = 100; % ms
 range_of_t = [0,t_max]; % ms
 
