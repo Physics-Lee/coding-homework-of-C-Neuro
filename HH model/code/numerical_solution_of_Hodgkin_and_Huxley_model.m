@@ -2,9 +2,9 @@ clear;clc;close all;
 
 %% constant
 % I_e and t_max
-I_e = 100; % nA
-t_max = 100; % ms
-range_of_t = [0,t_max]; % ms
+I_e = 800; % nA
+t_simulation = 200; % ms
+range_of_t = [0,t_simulation]; % ms
 
 % basic
 C_m = 10; % nF/mm^2
@@ -32,23 +32,25 @@ Hodgkin_Huxley_ODEs = @(t,y)...
     Alpha_h(y(1)).*(1-y(4))-Beta_h(y(1)).*y(4)];
 
 % initial value of y
-y_0 = [-64.9964 0.3177 0.0530 0.5960]; % [-64.9964 0.3177 0.0530 0.5960] is the value of [V n m h] when Ie = 0 nA and the system enters steady state.
+% y_0 = [0 0 0 0];
+y_0 = [-50 0.3177 0.0530 0.5960]; % a little perturbation
+% y_0 = [-64.9964 0.3177 0.0530 0.5960]; % [-64.9964 0.3177 0.0530 0.5960] is the value of [V n m h] when Ie = 0 nA and the system enters steady state.
 
 % ode45
 [t,y] = ode45(Hodgkin_Huxley_ODEs,range_of_t,y_0); % core
 
 % find peaks
-[Vmax,t_peaks] = findpeaks(y(:,1),t,'MinPeakProminence',1);
-[Vmin,tmin] = findpeaks(-y(:,1),t,'MinPeakProminence',1);
-Vmin = -Vmin;
+[V_max,t_max] = findpeaks(y(:,1),t,'MinPeakProminence',1);
+[V_min,t_min] = findpeaks(-y(:,1),t,'MinPeakProminence',1);
+V_min = - V_min;
 
 % plot V
 figure;
 subplot(2,1,1);
 plot(t,y(:,1),'black');
 hold on;
-scatter(t_peaks,Vmax,'blueo');
-scatter(tmin,Vmin,'redo');
+scatter(t_max,V_max,'blueo');
+scatter(t_min,V_min,'redo');
 xlabel('t (ms)');
 ylabel('V (mV)');
 title(['I_e = ' num2str(I_e) ' nA'])
@@ -64,51 +66,6 @@ legend('n','m','h');
 xlabel('t (ms)');
 ylabel('Probability');
 title(['I_e = ' num2str(I_e) ' nA'])
-
-%% frequency-I_e
-prompt = "Do you want to draw the graph of frequency-Ie?" + newline + "1: Yes" + newline + "2: No \n";
-flag = input(prompt);
-switch flag
-    case 1
-        count = 0;
-        range_of_I_e = 50:10:2000;
-        T = zeros(1,length(range_of_I_e));
-        f = zeros(1,length(range_of_I_e));
-        range_of_t = [0,t_max];
-        for I_e = range_of_I_e
-            count = count+1;
-
-            % ODE
-            Hodgkin_Huxley_ODEs = @(t,y)...
-                [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e);
-                Alpha_n(y(1)).*(1-y(2))-Beta_n(y(1)).*y(2);
-                Alpha_m(y(1)).*(1-y(3))-Beta_m(y(1)).*y(3);
-                Alpha_h(y(1)).*(1-y(4))-Beta_h(y(1)).*y(4)];
-
-            % initial value of y
-            y_0 = [-64.9964 0.3177 0.0530 0.5960]; % [-64.9964 0.3177 0.0530 0.5960] is the value of [V n m h] when Ie = 0 nA and the system enters steady state.
-
-            % ode45
-            [t,y] = ode45(Hodgkin_Huxley_ODEs,range_of_t,y_0);
-
-            % find peaks
-            [~,t_peaks] = findpeaks(y(:,1),t,'MinPeakProminence',1);
-            trial = 5; % only use 1 trial to estimate
-            if length(t_peaks) >= trial
-                T(count) = t_peaks(trial) - t_peaks(trial - 1);
-                f(count) = 1 / T(count);
-            else
-                f(count) = 0;
-            end
-        end
-        I_e = range_of_I_e;
-        figure;
-        plot(I_e,f,'black-o');
-        xlabel('Ie (nA）');
-        ylabel('f (kHz）');
-        title('f vs Ie')
-    case 0
-end
 
 %% phase graph
 prompt = "Do you want to draw the phase graph?" + newline + "1: Yes" + newline + "2: No \n";
@@ -162,5 +119,72 @@ switch flag
         ylabel('n (no dimension）');
         zlabel('m (no dimension）');
         title('3D graph');
+    case 0
+end
+
+%% frequency-I_e
+prompt = "Do you want to draw the graph of frequency-Ie?" + newline + "1: Yes" + newline + "2: No \n";
+flag = input(prompt);
+switch flag
+    case 1
+        count = 0;
+        range_of_I_e = 50:10:2000;
+        T = zeros(1,length(range_of_I_e));
+        f = zeros(1,length(range_of_I_e));
+        V_drop = zeros(1,length(range_of_I_e));
+        range_of_t = [0,t_simulation];
+        for I_e = range_of_I_e
+
+            % update
+            count = count + 1;
+
+            % ODE
+            Hodgkin_Huxley_ODEs = @(t,y)...
+                [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e);
+                Alpha_n(y(1)).*(1-y(2))-Beta_n(y(1)).*y(2);
+                Alpha_m(y(1)).*(1-y(3))-Beta_m(y(1)).*y(3);
+                Alpha_h(y(1)).*(1-y(4))-Beta_h(y(1)).*y(4)];
+
+            % initial value of y
+            y_0 = [-64.9964 0.3177 0.0530 0.5960]; % [-64.9964 0.3177 0.0530 0.5960] is the value of [V n m h] when Ie = 0 nA and the system enters steady state.
+
+            % ode45
+            [t,y] = ode45(Hodgkin_Huxley_ODEs,range_of_t,y_0);
+
+            % find peaks
+            [V_max,t_max] = findpeaks(y(:,1),t,'MinPeakProminence',1);
+            [V_min,t_min] = findpeaks(-y(:,1),t,'MinPeakProminence',1);
+            V_min = - V_min;
+
+            trial = 5; % only use 1 trial to estimate
+            if min(length(t_max),length(t_min)) >= trial
+
+                % calculate f
+                T(count) = t_max(trial) - t_max(trial - 1);
+                f(count) = 1 / T(count);
+
+                % calculate V_drop
+                V_drop(count) = V_max(trial) - V_min(trial);
+
+            else
+                f(count) = 0;
+                V_drop(count) = 0;
+            end
+        end
+
+        I_e = range_of_I_e;
+
+        % plot
+        figure;
+        plot(I_e,f,'black-o');
+        xlabel('Ie (nA）');
+        ylabel('f (kHz）');
+        title('f vs Ie')
+
+        figure;
+        plot(I_e,V_drop,'black-o');
+        xlabel('Ie (nA）');
+        ylabel('V_{max} - V_{min} (mV）');
+        title('V drop vs Ie')
     case 0
 end
