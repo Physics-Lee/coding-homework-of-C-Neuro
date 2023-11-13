@@ -8,6 +8,7 @@ load('../data/H1.mat');
 frame_rate = 500; % Hz
 t_total = 1200; % s
 frame_total = t_total * frame_rate; % no dimension
+mean_firing_rate = sum(rho) / t_total; % Hz
 
 %% Bar Plot of Fires
 
