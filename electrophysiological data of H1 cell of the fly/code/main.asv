@@ -302,25 +302,19 @@ hold on;
 plot(acf,'r')
 plot(acf_ideal,'b')
 
-%% isi_real vs isi_ideal
-
-% histogram
+%% hist
 figure
 isi_ms = isi * 1000; % ms
 edges = [0 0:1:20 20];
 histogram(isi_ms,edges);
 
-figure
+%%
 isi_ideal = diff(t_events_ideal);
-isi_ideal_ms = isi_ideal * 1000; % ms
-edges = [0 0:1:20 20];
-histogram(isi_ideal_ms,edges);
 
-% sig/mean
 mean(isi)
 std(isi)
-std(isi)/mean(isi);
+std(isi)/mean(isi)
 
 mean(isi_ideal)
 std(isi_ideal)
-std(isi_ideal)/mean(isi_ideal)
+std(isi_ideal)/mean(isi)

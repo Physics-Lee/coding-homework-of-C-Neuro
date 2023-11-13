@@ -68,6 +68,7 @@ plot(t_all, r_Gauss, 'red');
 plot(t_all, r_exp, 'blue');
 xlabel('t (s)');
 ylabel('r (Hz)');
+title("count spikes");
 legend('origin','box kernel','Gauss kernel','exp kernel');
 xlim([0,200]);
 
