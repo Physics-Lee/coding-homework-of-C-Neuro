@@ -22,7 +22,8 @@ time_window_all = 1; % s
 %% histogram of the inter-spike-interval
 
 fire_indices = find(rho == 1);
-isi = diff(fire_indices) / frame_rate; % s
+t_events_real = fire_indices / frame_rate; % s
+isi_real = diff(fire_indices) / frame_rate; % s
 
 % Tukey test (no need)
 % IQR_index_max = 20;
@@ -34,8 +35,8 @@ isi = diff(fire_indices) / frame_rate; % s
 %     Tukey_test(isi_seconds, IQR_index);
 
 % test
-test_Poisson_process(isi);
-test_Poisson_process(isi(isi > 0.02));
+test_Poisson_process(isi_real);
+test_Poisson_process(isi_real(isi_real > 0.02));
 
 %% spike-trigger-average (all)
 
@@ -164,7 +165,7 @@ r_predict = r_predict';
 
 % check
 if abs(mean(r_predict)-mean_firing_rate) < 10^(-4)
-    disp("check success!");
+    disp("check succeeds!");
 end
 
 % Plot
@@ -198,7 +199,7 @@ r_predict = r_predict';
 
 % check
 if abs(mean(r_predict)-mean_firing_rate) < 10^(-4)
-    disp("check success!");
+    disp("check succeeds!");
 end
 
 % Plot
@@ -233,7 +234,7 @@ r_predict = r_predict';
 
 % check
 if abs(mean(r_predict)-mean_firing_rate) < 10^(-4)
-    disp("check success!");
+    disp("check succeeds!");
 end
 
 % RMSE
@@ -271,7 +272,7 @@ r_predict = r_predict';
 
 % check
 if abs(mean(r_predict)-mean_firing_rate) < 10^(-4)
-    disp("check success!");
+    disp("check succeeds!");
 end
 
 % RMSE
@@ -294,21 +295,13 @@ xlim([1000,1200]);
 save_folder_path = "../result";
 save_all_figs(save_folder_path);
 
-%% auto-corr
-[acf, lags, bounds] = autocorr(rho);
-[acf_ideal, lags_ideal, bounds_ideal] = autocorr(t_events_ideal);
-figure;
-hold on;
-plot(acf,'r')
-plot(acf_ideal,'b')
-
 %% isi_real vs isi_ideal
 
 % histogram
 figure
-isi_ms = isi * 1000; % ms
+isi_real_ms = isi_real * 1000; % ms
 edges = [0 0:1:20 20];
-histogram(isi_ms,edges);
+histogram(isi_real_ms,edges);
 
 figure
 isi_ideal = diff(t_events_ideal);
@@ -317,10 +310,15 @@ edges = [0 0:1:20 20];
 histogram(isi_ideal_ms,edges);
 
 % sig/mean
-mean(isi)
-std(isi)
-std(isi)/mean(isi);
+disp("isi real")
+disp_cv(isi_real);
+disp("isi ideal")
+disp_cv(isi_ideal);
 
-mean(isi_ideal)
-std(isi_ideal)
-std(isi_ideal)/mean(isi_ideal)
+% auto-corr
+[acf, lags, bounds] = autocorr(t_events_real);
+[acf_ideal, lags_ideal, bounds_ideal] = autocorr(t_events_ideal);
+figure;
+hold on;
+plot(acf,'r')
+plot(acf_ideal,'b')
