@@ -16,6 +16,8 @@ frame_rate = 500; % Hz
 t_total = 20*60; % s
 frame_total = t_total * frame_rate; % no dimension
 mean_firing_rate = sum(rho) / t_total; % Hz
+time_window_all = 1; % s
+[r_real,r_box,r_Gauss,r_exp] = count_spikes(rho,time_window_all);
 
 %% histogram of the inter-spike-interval
 
@@ -34,7 +36,7 @@ isi = diff(spike_indices) / frame_rate;
 %     up_limit, down_limit, upper_bound, lower_bound] =...
 %     Tukey_test(isi_seconds, IQR_index);
 
-% screen
+% test
 test_Poisson_process(isi);
 test_Poisson_process(isi(isi > 0.02));
 
@@ -50,8 +52,8 @@ s_before_spikes = get_the_stimulus_before_spikes(stim,fire_indices,frame_window)
 
 % Plot
 figure;
-t = (-frame_window:-1) / frame_rate; % s
-plot(t,s_before_spikes);
+t_D = (-frame_window:-1) / frame_rate; % s
+plot(t_D,s_before_spikes);
 xlabel('t (s)');
 ylabel('s (some unit of intensity)');
 title('Stimulus Before Spikes');
@@ -77,8 +79,8 @@ s_before_spikes = get_the_stimulus_before_spikes(stim,fire_indices_short_interva
 
 % Plot
 figure;
-t = (-frame_window:-1) / frame_rate; % s
-plot(t,s_before_spikes);
+t_D = (-frame_window:-1) / frame_rate; % s
+plot(t_D,s_before_spikes);
 xlabel('t (s)');
 ylabel('s (some unit of intensity)');
 title('Stimulus Before Spikes, with <5ms Intervals');
@@ -113,23 +115,24 @@ s_before_long_interval_spikes = get_the_stimulus_before_spikes(stim, fire_indice
 
 % Plot
 figure;
-t = (-frame_window:-1) / frame_rate; % s
-plot(t, s_before_long_interval_spikes);
+t_D = (-frame_window:-1) / frame_rate; % s
+plot(t_D, s_before_long_interval_spikes);
 xlabel('t (s)');
 ylabel('s (some unit of intensity)');
 title('Stimulus Before Spikes, with >10ms Pre- and Post-Intervals');
 subtitle(sprintf("number of fires: %d; percentage: %.2f",length(fire_indices_long_interval),length(fire_indices_long_interval)/n_fire));
 ylim([0, 60]);
 
-%% kernal (no dimension)
+%% kernal
+
 variance_of_white_noise = (std(stim))^2;
 firing_rate = n_fire / t_total; % Hz
-D = s_before_spikes * firing_rate / variance_of_white_noise;
+D = s_before_spikes * mean_firing_rate / variance_of_white_noise;
 
 % Plot
 figure;
-t = (- frame_window:-1) / frame_rate; % s
-plot(t,D);
+t_D = (- frame_window:-1) / frame_rate; % s
+plot(t_D,D);
 title('kernal of the white noise');
 xlabel('t (s)');
 ylabel('kernal');
@@ -139,8 +142,142 @@ t_events = generate_poisson_process(mean_firing_rate, t_total);
 
 % Visualization
 figure; % Create a new figure
-stem(t_events, ones(size(t_events)), 'filled'); % Plot the event times
+stem(t_events, ones(size(t_events)), 'Marker','none'); % Plot the event times
 xlabel('Time'); % Label for the x-axis
 ylabel('Events'); % Label for the y-axis (though all events are at 1)
 title('Poisson Process Visualization'); % Title of the plot
 axis([0 t_total/1000 0 2]); % Set the axis limits
+
+% test
+isi = diff(t_events);
+test_Poisson_process(isi);
+
+%% linear model
+r_linear = conv(stim, D, 'same');
+r_0 = mean_firing_rate - mean(r_linear);
+r = r_0 + r_linear;
+
+% Reshape r into a 500x1200 matrix
+r_reshaped = reshape(r, 500, []);
+
+% Calculate mean of each column
+r_predict = mean(r_reshaped, 1);
+
+% Reshape back to 1200x1 vector
+r_predict = r_predict';
+
+% check
+if abs(mean(r_predict)-mean_firing_rate) < 10^(-4)
+    disp("check success!");
+end
+
+% Plot
+figure;
+hold on;
+t_all = 0:time_window_all:t_total-time_window_all;
+plot(t_all, r_real, 'black');
+plot(t_all, r_predict, 'magenta');
+xlabel('t (s)');
+ylabel('r (Hz)');
+title('linear model');
+legend('real','predict');
+xlim([1000,1200]);
+
+%% ReLU
+r_linear = conv(stim, D, 'same');
+r_nonlinear = ReLU(r_linear);
+r_0 = mean_firing_rate - mean(r_nonlinear);
+r = r_0 + r_nonlinear;
+
+% Reshape r into a 500x1200 matrix
+r_reshaped = reshape(r, 500, []);
+
+% Calculate mean of each column
+r_predict = mean(r_reshaped, 1);
+
+% Reshape back to 1200x1 vector
+r_predict = r_predict';
+
+% check
+if abs(mean(r_predict)-mean_firing_rate) < 10^(-4)
+    disp("check success!");
+end
+
+% Plot
+figure;
+hold on;
+t_all = 0:time_window_all:t_total-time_window_all;
+plot(t_all, r_real, 'black');
+plot(t_all, r_predict, 'magenta');
+xlabel('t (s)');
+ylabel('r (Hz)');
+title('Activation Function: ReLU');
+legend('real','predict');
+xlim([1000,1200]);
+
+%% ReLU with up bound
+r_linear = conv(stim, D, 'same');
+up_bound = 150; % super-parameter
+r_nonlinear = ReLU_with_up_bound(r_linear,up_bound);
+r_0 = mean_firing_rate - mean(r_nonlinear);
+r = r_0 + r_nonlinear;
+
+% Reshape r into a 500x1200 matrix
+r_reshaped = reshape(r, 500, []);
+
+% Calculate mean of each column
+r_predict = mean(r_reshaped, 1);
+
+% Reshape back to 1200x1 vector
+r_predict = r_predict';
+
+% check
+if abs(mean(r_predict)-mean_firing_rate) < 10^(-4)
+    disp("check success!");
+end
+
+% Plot
+figure;
+hold on;
+t_all = 0:time_window_all:t_total-time_window_all;
+plot(t_all, r_real, 'black');
+plot(t_all, r_predict, 'magenta');
+xlabel('t (s)');
+ylabel('r (Hz)');
+title('Activation Function: ReLU with up bound');
+legend('real','predict');
+xlim([1000,1200]);
+
+%% Sigmoid
+r_linear = conv(stim, D, 'same');
+r_linear = z_score(r_linear);
+amplitude = 200; % super-parameter
+r_nonlinear = amplitude * sigmoid(r_linear);
+r_0 = mean_firing_rate - mean(r_nonlinear);
+r = r_0 + r_nonlinear;
+
+% Reshape r into a 500x1200 matrix
+r_reshaped = reshape(r, 500, []);
+
+% Calculate mean of each column
+r_predict = mean(r_reshaped, 1);
+
+% Reshape back to 1200x1 vector
+r_predict = r_predict';
+
+% check
+if abs(mean(r_predict)-mean_firing_rate) < 10^(-4)
+    disp("check success!");
+end
+
+% Plot
+figure;
+hold on;
+t_all = 0:time_window_all:t_total-time_window_all;
+plot(t_all, r_real, 'black');
+plot(t_all, r_predict, 'magenta');
+xlabel('t (s)');
+ylabel('r (Hz)');
+title('Activation Function: Sigmoid');
+legend('real','predict');
+xlim([1000,1200]);

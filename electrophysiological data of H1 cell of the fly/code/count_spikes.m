@@ -1,18 +1,12 @@
-clc;clear;close all;
-
-%% load data
-load('../data/H1.mat');
+function [r_real,r_box,r_Gauss,r_exp] = count_spikes(rho,time_window)
 
 %% basic info
 
 frame_rate = 500; % Hz
 t_total = 1200; % s
 frame_total = t_total * frame_rate; % no dimension
-mean_firing_rate = sum(rho) / t_total; % Hz
 
 %% Bar Plot of Fires
-
-time_window = 1; % s
 frame_window = time_window * frame_rate; % no dimension
 spike_counts = zeros(1, ceil(frame_total/frame_window));
 
@@ -23,7 +17,7 @@ for i = 1:frame_window:frame_total
 end
 
 %
-firing_rate = spike_counts / time_window;
+r_real = spike_counts / time_window;
 
 %% Gauss
 
@@ -35,7 +29,7 @@ gauss_kernel = exp(-x .^ 2 / (2 * sigma ^ 2));
 gauss_kernel = gauss_kernel / sum(gauss_kernel); % Normalize the kernel
 
 % Convolve
-r_Gauss = conv(firing_rate, gauss_kernel, 'same');
+r_Gauss = conv(r_real, gauss_kernel, 'same');
 
 %% Exp
 
@@ -45,7 +39,7 @@ exp_kernel = exp(- x / tau);
 exp_kernel = exp_kernel / sum(exp_kernel); % Normalize the kernel
 
 % Convolve
-r_exp = conv(firing_rate, exp_kernel, 'same');
+r_exp = conv(r_real, exp_kernel, 'same');
 
 %% Boxcar
 
@@ -54,7 +48,7 @@ box_width = 2; % s
 box_kernel = ones(1, box_width) / box_width;
 
 % Convolve spike counts with the Boxcar kernel
-r_box = conv(firing_rate, box_kernel, 'same');
+r_box = conv(r_real, box_kernel, 'same');
 
 %% plot kernel
 figure;
@@ -67,12 +61,14 @@ legend('box kernel','Gauss kernel','exp kernel');
 % Plot
 figure;
 hold on;
-t = 0:time_window:t_total-time_window;
-plot(t, firing_rate, 'black');
-plot(t, r_box, 'green');
-plot(t, r_Gauss, 'red');
-plot(t, r_exp, 'blue');
+t_all = 0:time_window:t_total-time_window;
+plot(t_all, r_real, 'black');
+plot(t_all, r_box, 'green');
+plot(t_all, r_Gauss, 'red');
+plot(t_all, r_exp, 'blue');
 xlabel('t (s)');
 ylabel('r (Hz)');
 legend('origin','box kernel','Gauss kernel','exp kernel');
 xlim([0,200]);
+
+end
