@@ -71,4 +71,10 @@ ylabel('r (Hz)');
 legend('origin','box kernel','Gauss kernel','exp kernel');
 xlim([0,200]);
 
+%% transpose
+r_real = r_real';
+r_box = r_box';
+r_Gauss = r_Gauss';
+r_exp = r_exp';
+
 end

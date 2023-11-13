@@ -180,6 +180,8 @@ plot(t_all, r_predict, 'magenta');
 xlabel('t (s)');
 ylabel('r (Hz)');
 title('linear model');
+error_RMSE = RMSE(r_real,r_predict);
+subtitle(sprintf("RMSE: %.4f",error_RMSE));
 legend('real','predict');
 xlim([1000,1200]);
 
@@ -212,6 +214,8 @@ plot(t_all, r_predict, 'magenta');
 xlabel('t (s)');
 ylabel('r (Hz)');
 title('Activation Function: ReLU');
+error_RMSE = RMSE(r_real,r_predict);
+subtitle(sprintf("RMSE: %.4f",error_RMSE));
 legend('real','predict');
 xlim([1000,1200]);
 
@@ -236,6 +240,9 @@ if abs(mean(r_predict)-mean_firing_rate) < 10^(-4)
     disp("check success!");
 end
 
+% RMSE
+error_RMSE = RMSE(r_real,r_predict);
+
 % Plot
 figure;
 hold on;
@@ -245,6 +252,7 @@ plot(t_all, r_predict, 'magenta');
 xlabel('t (s)');
 ylabel('r (Hz)');
 title('Activation Function: ReLU with up bound');
+subtitle(sprintf("RMSE: %.4f",error_RMSE));
 legend('real','predict');
 xlim([1000,1200]);
 
@@ -270,6 +278,9 @@ if abs(mean(r_predict)-mean_firing_rate) < 10^(-4)
     disp("check success!");
 end
 
+% RMSE
+error_RMSE = RMSE(r_real,r_predict);
+
 % Plot
 figure;
 hold on;
@@ -279,5 +290,6 @@ plot(t_all, r_predict, 'magenta');
 xlabel('t (s)');
 ylabel('r (Hz)');
 title('Activation Function: Sigmoid');
+subtitle(sprintf("RMSE: %.4f",error_RMSE));
 legend('real','predict');
 xlim([1000,1200]);
