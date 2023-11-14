@@ -328,8 +328,8 @@ lag_frames = -max_lag:max_lag;
 lag_time = lag_frames / frame_rate * 1000; % ms
 lag_time_half = lag_time(lag_time >= 0);
 
-[acf_real, lags_real, bounds_real] = autocorr(rho, max_lag);
-[acf_ideal, lags_ideal, bounds_ideal] = autocorr(rho_ideal, max_lag);
+[acf_real, ~, ~] = autocorr(rho, max_lag);
+[acf_ideal, ~, ~] = autocorr(rho_ideal, max_lag);
 figure;
 hold on;
 plot(lag_time_half,acf_real,'r-o')
