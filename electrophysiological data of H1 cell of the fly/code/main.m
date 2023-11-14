@@ -22,6 +22,8 @@ time_window_all = 1; % s
 %% histogram of the inter-spike-interval
 
 fire_indices = find(rho == 1);
+n_fire = length(fire_indices);
+frame_events_real = fire_indices;
 t_events_real = fire_indices / frame_rate; % s
 isi_real = diff(fire_indices) / frame_rate; % s
 
@@ -39,9 +41,6 @@ test_Poisson_process(isi_real);
 test_Poisson_process(isi_real(isi_real > 0.02));
 
 %% spike-trigger-average (all)
-
-fire_indices = find(rho == 1);
-n_fire = length(fire_indices);
 time_window = 0.3; % s
 frame_window = time_window * frame_rate;
 
@@ -148,6 +147,12 @@ axis([0 t_total/1000 0 2]); % Set the axis limits
 
 % test
 test_Poisson_process(diff(t_events_ideal));
+
+% from t_events to rho
+frame_events_ideal = round(t_events_ideal * frame_rate);
+frame_events_ideal_test = unique(frame_events_ideal); % here we have an issue that is impossible to be fixed
+rho_ideal = zeros(frame_total,1);
+rho_ideal(frame_events_ideal) = 1;
 
 %% linear model
 r_linear = conv(stim, D, 'same');
@@ -291,10 +296,6 @@ subtitle(sprintf("RMSE: %.4f",error_RMSE));
 legend('real','predict');
 xlim([1000,1200]);
 
-%% save
-save_folder_path = "../result";
-save_all_figs(save_folder_path);
-
 %% isi_real vs isi_ideal
 
 % histogram
@@ -302,12 +303,18 @@ figure
 isi_real_ms = isi_real * 1000; % ms
 edges = [0 0:1:20 20];
 histogram(isi_real_ms,edges);
+xlabel('t (ms)');
+ylabel('count');
+title('inter-spike-interval real');
 
 figure
 isi_ideal = diff(t_events_ideal);
 isi_ideal_ms = isi_ideal * 1000; % ms
 edges = [0 0:1:20 20];
 histogram(isi_ideal_ms,edges);
+xlabel('t (ms)');
+ylabel('count');
+title('inter-spike-interval ideal');
 
 % sig/mean
 disp("isi real")
@@ -315,10 +322,68 @@ disp_cv(isi_real);
 disp("isi ideal")
 disp_cv(isi_ideal);
 
-% auto-corr
-[acf, lags, bounds] = autocorr(t_events_real);
-[acf_ideal, lags_ideal, bounds_ideal] = autocorr(t_events_ideal);
+%% auto-corr by autocorr
+max_lag = 50; % 100 ms
+lag_frames = -max_lag:max_lag;
+lag_time = lag_frames / frame_rate * 1000; % ms
+lag_time_half = lag_time(lag_time >= 0);
+
+[acf_real, lags_real, bounds_real] = autocorr(rho, max_lag);
+[acf_ideal, lags_ideal, bounds_ideal] = autocorr(rho_ideal, max_lag);
 figure;
 hold on;
-plot(acf,'r')
-plot(acf_ideal,'b')
+plot(lag_time_half,acf_real,'r-o')
+plot(lag_time_half,acf_ideal,'b-o')
+xlabel("t(ms)");
+ylabel('Auto-correlation');
+title('Auto-correlation of the spike train');
+legend("real","ideal");
+set_full_screen;
+
+%% auto-corr by xcorr
+auto_corr_real = xcorr(centralization(rho), max_lag, 'coeff'); % Calculate autocorrelation
+auto_corr_ideal = xcorr(centralization(rho_ideal), max_lag, 'coeff'); % Calculate autocorrelation
+
+figure;
+hold on;
+plot(lag_time, auto_corr_real,'r-o');
+plot(lag_time, auto_corr_ideal,'b-o');
+xlabel('t (ms)');
+ylabel('Auto-correlation');
+title('Auto-correlation of the spike train');
+legend('real','ideal');
+set_full_screen;
+xlim([0,100]);
+
+%% auto-corr by xcov
+auto_corr_real = xcov(rho, max_lag, 'coeff'); % Calculate autocorrelation
+auto_corr_ideal = xcov(rho_ideal, max_lag, 'coeff'); % Calculate autocorrelation
+
+figure;
+hold on;
+plot(lag_time, auto_corr_real,'r-o');
+plot(lag_time, auto_corr_ideal,'b-o');
+xlabel('t (ms)');
+ylabel('Auto-correlation');
+title('Auto-correlation of the spike train');
+legend('real','ideal');
+set_full_screen;
+xlim([0,100]);
+
+%% auto-corr by hand
+auto_corr_real_by_hand = auto_corr_manual(rho, max_lag);
+auto_corr_ideal_by_hand = auto_corr_manual(rho_ideal, max_lag);
+figure;
+hold on;
+plot(lag_time_half, auto_corr_real_by_hand,'r-o');
+plot(lag_time_half, auto_corr_ideal_by_hand,'b-o');
+xlabel('t (ms)');
+ylabel('Auto-correlation');
+title('Auto-correlation of the spike train');
+legend('real','ideal');
+set_full_screen;
+
+%% save
+% save_folder_path = "../result";
+% save_all_figs(save_folder_path);
+close all;
