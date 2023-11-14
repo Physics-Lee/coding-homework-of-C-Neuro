@@ -44,4 +44,6 @@ ideal
 
 Why is there a dip below 6 ms in the histogram for the actual spike train?: Refactory.
 
-What are the coefficents of variation (see lecture note) for the two spike trains and why might they differ?: Real data has bigger $\sigma$
+What are the coefficents of variation (see lecture note) for the two spike trains and why might they differ?: Real data has bigger $\sigma$.
+
+Why is there a dip at a lag of 2 ms in the autocorrelation of the actual spike train? Is there a dip for the synthetic train too? emm. **maybe the time-resolution**
