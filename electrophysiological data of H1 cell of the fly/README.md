@@ -66,8 +66,6 @@ Why is there a dip at a lag of 2 ms in the autocorrelation of the actual spike t
 
 Is there a dip for the synthetic train too? No.
 
-![figure_17](D:\Public_repository\coding-homework-of-C-Neuro\electrophysiological data of H1 cell of the fly\result\figure_17.png)
-
 The histogram of inter-spike-interval tells us, compared with ideal Poisson process, the real spike train has:
 
 * Less 0-6 ms
@@ -77,7 +75,11 @@ The histogram of inter-spike-interval tells us, compared with ideal Poisson proc
 This leads to that, in the plot of auto-corr
 
 * 0-6 ms is smaller than 6-20 ms
-* 6-20 ms is larger than 0.
+* 2 ms is smaller than 0.
 * 20-Inf ms is similar
 
 **So, always remember to plot the histogram!**
+
+
+
+**![auto_corr_by_autocorr](README.assets/auto_corr_by_autocorr.png)**
