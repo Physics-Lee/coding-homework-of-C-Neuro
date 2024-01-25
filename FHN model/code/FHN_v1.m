@@ -6,7 +6,7 @@
 clear;clc;close all;
 
 %% parameters
-I = 0.5;
+I = 0;
 a = 1;
 b = 1;
 c = 1;
@@ -15,7 +15,7 @@ c = 1;
 
 % paras
 t_max = 1000;
-y_0 = [0 0];
+y_0 = [0 0.1];
 
 % y(1), y(2) stand for V, w
 FitzHugh_Nagumo_model_2 = @(t,y)...
@@ -35,7 +35,7 @@ w_derivative = b.*V - c.*w;
 V_derivative_syms = @(V,w) - V.^3 + (a+1).*V.^2 - a.*V - w + I;
 w_derivative_syms = @(V,w) b*V - c*w;
 
-plot_FHN(t, y, V, w, V_derivative, w_derivative, V_derivative_syms, w_derivative_syms);
+plot_FHN(t, y, y_0, V, w, V_derivative, w_derivative, V_derivative_syms, w_derivative_syms);
 
-%% stability of the fixed point
-[lambda_1,lambda_2] = analyze_stability_of_fixed_point(a,b,c);
+[tau, delta, discriminant, lambda_1, lambda_2, stability_str] = analyze_stability_of_fixed_point(a,b,c);
+title(stability_str);
