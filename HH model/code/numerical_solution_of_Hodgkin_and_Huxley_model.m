@@ -2,7 +2,7 @@ clear;clc;close all;
 
 %% constant
 % I_e and t_max
-I_e = 800; % nA
+I_e = 0; % nA
 t_simulation = 200; % ms
 range_of_t = [0,t_simulation]; % ms
 
@@ -128,12 +128,17 @@ flag = input(prompt);
 switch flag
     case 1
         count = 0;
-        range_of_I_e = 50:10:2000;
+        range_of_I_e = [0:10:20 21:1:70 70:10:100 100:10:2000];
         T = zeros(1,length(range_of_I_e));
         f = zeros(1,length(range_of_I_e));
         V_drop = zeros(1,length(range_of_I_e));
+        V_max_all = zeros(1,length(range_of_I_e));
         range_of_t = [0,t_simulation];
         for I_e = range_of_I_e
+
+            if I_e == 0
+                why;
+            end
 
             % update
             count = count + 1;
@@ -146,7 +151,7 @@ switch flag
                 Alpha_h(y(1)).*(1-y(4))-Beta_h(y(1)).*y(4)];
 
             % initial value of y
-            y_0 = [-64.9964 0.3177 0.0530 0.5960]; % [-64.9964 0.3177 0.0530 0.5960] is the value of [V n m h] when Ie = 0 nA and the system enters steady state.
+            y_0 = [-50 0.3177 0.0530 0.5960];
 
             % ode45
             [t,y] = ode45(Hodgkin_Huxley_ODEs,range_of_t,y_0);
@@ -156,7 +161,7 @@ switch flag
             [V_min,t_min] = findpeaks(-y(:,1),t,'MinPeakProminence',1);
             V_min = - V_min;
 
-            trial = 5; % only use 1 trial to estimate
+            trial = 2; % only use 1 trial to estimate
             if min(length(t_max),length(t_min)) >= trial
 
                 % calculate f
@@ -164,6 +169,7 @@ switch flag
                 f(count) = 1 / T(count);
 
                 % calculate V_drop
+                V_max_all(count) = V_max(trial);
                 V_drop(count) = V_max(trial) - V_min(trial);
 
             else
@@ -172,19 +178,23 @@ switch flag
             end
         end
 
-        I_e = range_of_I_e;
-
         % plot
         figure;
-        plot(I_e,f,'black-o');
+        plot(range_of_I_e,f,'black-o');
         xlabel('Ie (nA）');
         ylabel('f (kHz）');
         title('f vs Ie')
 
         figure;
-        plot(I_e,V_drop,'black-o');
+        plot(range_of_I_e,V_drop,'black-o');
         xlabel('Ie (nA）');
         ylabel('V_{max} - V_{min} (mV）');
         title('V drop vs Ie')
+
+        figure;
+        plot(range_of_I_e,V_max_all,'black-o');
+        xlabel('Ie (nA）');
+        ylabel('V_{max}(mV）');
+        title('V_{max} vs Ie')
     case 0
 end

@@ -154,6 +154,9 @@ frame_events_ideal_test = unique(frame_events_ideal); % here we have an issue th
 rho_ideal = zeros(frame_total,1);
 rho_ideal(frame_events_ideal) = 1;
 
+%%
+[r_ideal,r_box_ideal,r_Gauss_ideal,r_exp_ideal] = count_spikes(rho_ideal,time_window_all);
+
 %% linear model
 r_linear = conv(stim, D, 'same');
 r_0 = mean_firing_rate - mean(r_linear);
@@ -334,7 +337,7 @@ figure;
 hold on;
 plot(lag_time_half,acf_real,'r-o')
 plot(lag_time_half,acf_ideal,'b-o')
-xlabel("t(ms)");
+xlabel("t (ms)");
 ylabel('Auto-correlation');
 title('Auto-correlation of the spike train');
 legend("real","ideal");
