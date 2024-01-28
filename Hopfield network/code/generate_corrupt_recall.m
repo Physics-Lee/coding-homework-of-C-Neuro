@@ -3,41 +3,62 @@
 % Yixuan Li, 2024-01-28
 %
 
-clc;clear;close all;
-
-% paras
-N_neuron = 500;
-N_pattern_range = 10:10:150;
-N_exp = 100;
-fraction_of_corrupted_bits = 0;
+function [f_error_pattern_mean,f_error_pattern_SEM,f_error_neuron_mean,f_error_neuron_SEM] = generate_corrupt_recall(N_neuron, N_pattern, N_exp, fraction_of_corrupted_bits)
 
 % init
-f_error_pattern_mean = zeros(size(N_pattern_range));
-f_error_pattern_SEM = zeros(size(N_pattern_range));
-f_error_neuron_mean = zeros(size(N_pattern_range));
-f_error_neuron_SEM = zeros(size(N_pattern_range));
+N_corrupted_bits = int32(fraction_of_corrupted_bits * N_neuron);
+f_error_pattern = zeros(N_exp, 1);
+f_error_neuron = zeros(N_exp, N_pattern);
+Is_recalled = false(N_exp, N_pattern);
 
-% loop to process each P
-for idx = 1:length(N_pattern_range)
+% loop to repeat exps
+for j = 1:N_exp
 
-    % N pattern now
-    N_pattern = N_pattern_range(idx);
+    % generate patterns
+    memory_patterns = generate_memory_patterns(N_neuron,N_pattern);
 
-    % generate, corrupt and recall
-    [f_error_pattern_mean(idx),f_error_pattern_SEM(idx),f_error_neuron_mean(idx),f_error_neuron_SEM(idx)] = corrupt_and_recall(N_neuron, N_pattern, N_exp, fraction_of_corrupted_bits);
+    % calculate the weight matrix
+    W = calculate_W(N_neuron,N_pattern,memory_patterns);
+
+    % loop to corrupt each pattern
+    for k = 1:N_pattern
+
+        % init
+        pattern_now = memory_patterns{k};
+
+        % corrupt
+        pattern_now = corrupt_a_pattern(pattern_now,N_neuron,N_corrupted_bits);
+
+        % recall
+        N_max_steps = 100;
+        for i = 1:N_max_steps
+            pattern_now = sgn(W * pattern_now);
+            if all(pattern_now == memory_patterns{k},'all')
+                Is_recalled(j,k) = true; 
+                f_error_neuron(j,k) = 0;
+                break;
+            end
+        end
+
+        % after N steps, calculate the number of error neurons
+        if i == N_max_steps
+            f_error_neuron(j,k) = sum(pattern_now ~= memory_patterns{k})/N_neuron;
+        end
+
+    end
+
+    % frequency of error pattern
+    f_error_pattern(j,1) = 1 - sum(Is_recalled(j,:)) / N_pattern;
+
 end
 
-% plot
-figure;
-errorbar(N_pattern_range/N_neuron, f_error_pattern_mean, f_error_pattern_SEM);
-xlabel('P/N');
-ylabel('P(error pattern)');
-title(sprintf('N_{neuron} = %d; Fraction of Corrupted Bits = %.1f; N_{exp} = %d', N_neuron, fraction_of_corrupted_bits, N_exp));
-subtitle("Error Bar for SEM");
+% calculate the mean and SEM of f error neuron
+f_error_neuron_flatted = reshape(f_error_neuron, [], 1);
+f_error_neuron_mean = mean(f_error_neuron_flatted);
+f_error_neuron_SEM = std(f_error_neuron_flatted) / sqrt(N_exp);
 
-figure;
-errorbar(N_pattern_range/N_neuron, f_error_neuron_mean, f_error_neuron_SEM);
-xlabel('P/N');
-ylabel('P(error neuron)');
-title(sprintf('N_{neuron} = %d; Fraction of Corrupted Bits = %.1f; N_{exp} = %d', N_neuron, fraction_of_corrupted_bits, N_exp));
-subtitle("Error Bar for SEM");
+% calculate the mean and SEM of f error pattern
+f_error_pattern_mean = mean(f_error_pattern);
+f_error_pattern_SEM = std(f_error_pattern) / sqrt(N_exp);
+
+end
