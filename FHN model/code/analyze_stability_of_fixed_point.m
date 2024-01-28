@@ -37,4 +37,6 @@ if ~exist('stability_str', 'var')
     stability_str = "Stability could not be determined";
 end
 
+disp(stability_str);
+
 end

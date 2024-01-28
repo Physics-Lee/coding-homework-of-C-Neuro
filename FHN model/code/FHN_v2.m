@@ -24,15 +24,6 @@ FitzHugh_Nagumo_model_1 = @(t,y)...
 range_of_t = [0,t_max];
 [t,y] = ode45(FitzHugh_Nagumo_model_1,range_of_t,y_0);
 
-%% V-t and w-t
-figure(1)
-plot(t,y(:,1),'blue');
-hold on;
-plot(t,y(:,2),'red');
-xlabel('t');
-ylabel('V or w');
-legend('V','w');
-
 %% plot
 
 step = 0.1;
@@ -44,4 +35,4 @@ w_derivative = 1/tau * (V + a - b*w);
 V_derivative_syms = @(V,w) -1/3 * V^3 + V - w + I;
 w_derivative_syms = @(V,w) 1/tau * ( V + a - b * w);
 
-plot_FHN(t, y, V, w, V_derivative, w_derivative, V_derivative_syms, w_derivative_syms);
+plot_FHN(t, y, y_0, V, w, V_derivative, w_derivative, V_derivative_syms, w_derivative_syms);

@@ -96,10 +96,10 @@ flag = input(prompt);
 switch flag
     case 1
         figure;
-        number_of_point_drawed_at_one_time = 100;
-        for i = 1:number_of_point_drawed_at_one_time:length(V) - number_of_point_drawed_at_one_time
-            plot(V(i:i+number_of_point_drawed_at_one_time),n(i:i+number_of_point_drawed_at_one_time));
-            hold on;
+        hold on;
+        n_points_one_time = 100;
+        for i = 1:n_points_one_time:length(V) - n_points_one_time
+            plot(V(i:i+n_points_one_time),n(i:i+n_points_one_time));            
             pause(0.5)
         end
         xlabel('V (mV）');
@@ -107,11 +107,11 @@ switch flag
         title('2D graph');
 
         figure;
-        number_of_point_drawed_at_one_time = 100;
-        for i = 1:number_of_point_drawed_at_one_time:length(V) - number_of_point_drawed_at_one_time
-            plot3(V(i:i+number_of_point_drawed_at_one_time),...
-                n(i:i+number_of_point_drawed_at_one_time),...
-                m(i:i+number_of_point_drawed_at_one_time));
+        n_points_one_time = 100;
+        for i = 1:n_points_one_time:length(V) - n_points_one_time
+            plot3(V(i:i+n_points_one_time),...
+                n(i:i+n_points_one_time),...
+                m(i:i+n_points_one_time));
             hold on;
             pause(0.5)
         end

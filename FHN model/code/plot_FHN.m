@@ -1,13 +1,13 @@
 function plot_FHN(t, y, y_0, x_1, y_1, V_derivative, w_derivative, V_derivative_syms, w_derivative_syms)
 
-% plot V-t and w-t
-figure;
-plot(t,y(:,1),'blue');
-hold on;
-plot(t,y(:,2),'red');
-xlabel('t');
-ylabel('V or w');
-legend('V','w');
+% % plot V-t and w-t
+% figure;
+% plot(t,y(:,1),'blue');
+% hold on;
+% plot(t,y(:,2),'red');
+% xlabel('t');
+% ylabel('V or w');
+% legend('V','w');
 
 % plot V-w
 figure;
