@@ -8,7 +8,7 @@ clc;clear;close all;
 % paras
 N_neuron = 500;
 N_pattern_range = 10:10:150;
-N_exp = 100;
+N_exp = 10;
 fraction_of_corrupted_bits = 0;
 
 % init

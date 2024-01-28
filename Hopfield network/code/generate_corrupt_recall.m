@@ -19,13 +19,12 @@ for j = 1:N_exp
     memory_patterns = generate_memory_patterns(N_neuron,N_pattern);
 
     % calculate the weight matrix
-
     switch option_W
         case "vanila"
             W = calculate_W_vectorized(memory_patterns);
         case "palimpsest"
             tau = 0.1;
-            W = calculate_W_palimpsest(memory_patterns,tau);
+            W = calculate_W_palimpsest_vectorized(memory_patterns,tau);
     end
 
     % loop to corrupt each pattern
