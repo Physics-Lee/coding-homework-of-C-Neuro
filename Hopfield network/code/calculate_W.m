@@ -9,7 +9,7 @@ W = zeros(N_neuron,N_neuron);
 for i = 1:N_neuron
     for j = i+1:N_neuron
         for k = 1:N_memory_pattern
-            W(i,j) = W(i,j) + 1/N_neuron*memory_patterns{k}(i)*memory_patterns{k}(j);
+            W(i,j) = W(i,j) + 1/N_neuron * memory_patterns{k}(i) * memory_patterns{k}(j);
         end
     end
 end
