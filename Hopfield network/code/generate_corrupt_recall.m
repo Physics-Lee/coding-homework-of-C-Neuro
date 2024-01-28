@@ -10,6 +10,7 @@ N_corrupted_bits = int32(fraction_of_corrupted_bits * N_neuron);
 f_error_pattern = zeros(N_exp, 1);
 f_error_neuron = zeros(N_exp, N_pattern);
 Is_recalled = false(N_exp, N_pattern);
+option_W = "palimpsest";
 
 % loop to repeat exps
 for j = 1:N_exp
@@ -18,7 +19,14 @@ for j = 1:N_exp
     memory_patterns = generate_memory_patterns(N_neuron,N_pattern);
 
     % calculate the weight matrix
-    W = calculate_W(N_neuron,N_pattern,memory_patterns);
+
+    switch option_W
+        case "vanila"
+            W = calculate_W_vectorized(memory_patterns);
+        case "palimpsest"
+            tau = 0.1;
+            W = calculate_W_palimpsest(memory_patterns,tau);
+    end
 
     % loop to corrupt each pattern
     for k = 1:N_pattern
@@ -34,7 +42,7 @@ for j = 1:N_exp
         for i = 1:N_max_steps
             pattern_now = sgn(W * pattern_now);
             if all(pattern_now == memory_patterns{k},'all')
-                Is_recalled(j,k) = true; 
+                Is_recalled(j,k) = true;
                 f_error_neuron(j,k) = 0;
                 break;
             end

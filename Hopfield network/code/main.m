@@ -3,7 +3,7 @@
 % Yixuan Li, 2024-01-28
 %
 
-clc;clear;close all;
+clc;clear;close all; 
 
 % paras
 N_neuron = 500;
