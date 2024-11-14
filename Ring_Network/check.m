@@ -4,10 +4,10 @@ clc; clear; close all;
 N = 360;  % Number of neurons
 theta = linspace(0, 2 * pi * (N-1) / N, N)';   % Neuron preferred angles (add 1 to include 2*pi)
 J_0 = -0.5;  % Global synaptic strength
-J_1 = 2.5;  % Feature-specific synaptic strength
+J_1 = 1.2;  % Feature-specific synaptic strength
 I_0 = 1;  % Uniform external input
-I_1 = 0;  % Feature-specific external input strength
-theta_0 = pi / 4;  % Center of external stimulus
+I_1 = 0.01;  % Feature-specific external input strength
+theta_0 = pi;  % Center of external stimulus
 max_iterations = 10^5;  % Maximum number of iterations
 tolerance = 1e-4;  % Convergence threshold
 
@@ -24,12 +24,8 @@ I = I_0 + I_1 * cos(theta - theta_0);
 activation_func = 'ReLU';
 
 % Initialize the neuronal states u
-% u = zeros(N, 1);
-% u = initializing_u(N, 'Cos');
-% u = initializing_u(N, 'Gaussian_v2');
-% u = initializing_u(N, 'Linear');
 rng(100);
-u = initializing_u(N, 'Uniform');
+u = initializing_u(N, "ones") * I_0 / (1 - J_0);
 
 % Iteratively update the neuronal states
 for iteration = 1:max_iterations

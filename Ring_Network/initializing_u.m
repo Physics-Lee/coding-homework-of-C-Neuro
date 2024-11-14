@@ -21,5 +21,9 @@ switch init_method
         u_min = 0; % Starting value of the linear gradient
         u_max = 50; % Ending value of the linear gradient
         u = linspace(u_min, u_max, N)'; % Linear spacing from u_min to u_max
+    case "zeros"
+        u = zeros(N, 1);
+    case "ones"
+        u = ones(N, 1);
 end
 end
