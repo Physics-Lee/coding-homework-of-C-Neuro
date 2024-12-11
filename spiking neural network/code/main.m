@@ -105,14 +105,14 @@ for g = g_range
     set(gcf, 'Position', get(0, 'Screensize'));
 
     % save
-    folder_path = 'F:\1_learning\class\computational neuroscience\coding homework of C Neuro\spiking neural network\result\temp';
-    if ~isfolder(folder_path)
-        mkdir(folder_path)
-    end
-    file_name = sprintf('fire moment; g = %.1f.png',g);
-    save_and_not_close_v2(folder_path,file_name);
-    file_name = sprintf('fire moment; g = %.1f.fig',g);
-    save_and_not_close_v2(folder_path,file_name);
+    % folder_path = 'F:\1_learning\class\computational neuroscience\coding homework of C Neuro\spiking neural network\result\temp';
+    % if ~isfolder(folder_path)
+    %     mkdir(folder_path)
+    % end
+    % file_name = sprintf('fire moment; g = %.1f.png',g);
+    % save_and_not_close_v2(folder_path,file_name);
+    % file_name = sprintf('fire moment; g = %.1f.fig',g);
+    % save_and_not_close_v2(folder_path,file_name);
 
     % %% plot the heat map of V
     % 
