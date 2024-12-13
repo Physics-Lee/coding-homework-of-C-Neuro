@@ -2,9 +2,19 @@ clear;clc;close all;
 
 %% constant
 % I_e and t_max
-I_e = 0; % nA
 t_simulation = 200; % ms
 range_of_t = [0,t_simulation]; % ms
+I_e = 1000; % nA
+
+% External current as a cosine function
+A = 100;  % Amplitude of the current (nA)
+f_I = 10;   % Frequency of oscillation (Hz)
+phi = 0;  % Phase offset (radians)
+% I_e_cos = @(t, A, f_I, phi) A * cos(2*pi*f_I*t + phi);  % A * cos(omega * t + phi);
+
+f_I_1 = 1000;
+f_I_2 = 1001;
+I_e_spindle = @(t, A, f_I_1, f_I_2, phi) A * cos(2*pi*f_I_1*t + phi) + cos(2*pi*f_I_2)*t;
 
 % basic
 C_m = 10; % nF/mm^2
@@ -26,7 +36,7 @@ Beta_h = @(V) 1./(1+exp(-0.1.*(V+35)));
 %% use ode45 to solve ODEs
 % 4-variable-1-order linear ODEs, where y(1) y(2) y(3) y(4) represents V n m h
 Hodgkin_Huxley_ODEs = @(t,y)...
-    [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e); % *10^3 will convert μA to nA
+    [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L)) + I_e_spindle(t, I_e, f_I_1, f_I_2, phi)); % *10^3 will convert μA to nA
     Alpha_n(y(1)).*(1-y(2))-Beta_n(y(1)).*y(2);
     Alpha_m(y(1)).*(1-y(3))-Beta_m(y(1)).*y(3);
     Alpha_h(y(1)).*(1-y(4))-Beta_h(y(1)).*y(4)];
@@ -95,19 +105,19 @@ prompt = "Do you want to video-lize the phase graph?" + newline + "1: Yes" + new
 flag = input(prompt);
 switch flag
     case 1
-        figure;
-        hold on;
-        n_points_one_time = 100;
-        for i = 1:n_points_one_time:length(V) - n_points_one_time
-            plot(V(i:i+n_points_one_time),n(i:i+n_points_one_time));            
-            pause(0.5)
-        end
-        xlabel('V (mV）');
-        ylabel('n (no dimension）');
-        title('2D graph');
+        % figure;
+        % hold on;
+        % n_points_one_time = 100;
+        % for i = 1:n_points_one_time:length(V) - n_points_one_time
+        %     plot(V(i:i+n_points_one_time),n(i:i+n_points_one_time));            
+        %     pause(0.5)
+        % end
+        % xlabel('V (mV）');
+        % ylabel('n (no dimension）');
+        % title('2D graph');
 
         figure;
-        n_points_one_time = 100;
+        n_points_one_time = 1000 * 3;
         for i = 1:n_points_one_time:length(V) - n_points_one_time
             plot3(V(i:i+n_points_one_time),...
                 n(i:i+n_points_one_time),...
@@ -128,12 +138,13 @@ flag = input(prompt);
 switch flag
     case 1
         count = 0;
-        range_of_I_e = [0:10:20 21:1:70 70:10:100 100:10:2000];
+        % range_of_I_e = [0:10:20 21:1:70 70:10:100 100:10:2000];
+        range_of_I_e = 100:10:200;
         T = zeros(1,length(range_of_I_e));
         f = zeros(1,length(range_of_I_e));
         V_drop = zeros(1,length(range_of_I_e));
         V_max_all = zeros(1,length(range_of_I_e));
-        range_of_t = [0,t_simulation];
+        range_of_t = [0, t_simulation];
         for I_e = range_of_I_e
 
             if I_e == 0
@@ -145,7 +156,7 @@ switch flag
 
             % ODE
             Hodgkin_Huxley_ODEs = @(t,y)...
-                [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L))+I_e);
+                [(1./C_m).*(10^3*(-g_K.*(y(2).^4).*(y(1)-E_K)-g_Na.*(y(3).^3).*y(4).*(y(1)-E_Na)-g_L.*(y(1)-E_L)) + I_e_spindle(t, I_e, f_I_1, f_I_2, phi));
                 Alpha_n(y(1)).*(1-y(2))-Beta_n(y(1)).*y(2);
                 Alpha_m(y(1)).*(1-y(3))-Beta_m(y(1)).*y(3);
                 Alpha_h(y(1)).*(1-y(4))-Beta_h(y(1)).*y(4)];
