@@ -12,7 +12,7 @@ xlabel('Time (s)');
 ylabel('Average Firing Rate');
 legend('E Population', 'I Population');
 title('E-I Balanced Network Firing Rates');
-subtitle(sprintf('wEE = %.2f; wIE = %.2f; wEI = %.2f; wII = %.2f; c-out = %.2f', wEE, wIE, wEI, wII, c_out));
+subtitle(sprintf('wEE = %.2f; wIE = %.2f; wEI = %.2f; wII = %.2f; beta_E = %.2f; beta_I = %.2f', wEE, wIE, wEI, wII, c_out, c_out * 0.8));
 grid on;
 
  end

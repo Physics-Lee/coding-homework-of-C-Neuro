@@ -1,4 +1,4 @@
-lear; clc; close all;
+clear; clc; close all;
 
 %%
 rng(42)
@@ -11,25 +11,35 @@ p = 0.1;                  % Connection probability (K = p * N)
 K = round(p * N);         % Number of connections per neuron
 tau = 1e-2;               % Time constant (10 ms)
 dt = 1e-3;                % Time step (0.1 ms)
-T = 5;                    % Total simulation time (1 second)
+T = 10;                    % Total simulation time (1 second)
 steps = T / dt;           % Number of time steps
 
 %% Weight Parameters
-wEE = 0.3;                  % Base weight for E->E connections
-wIE = 0.3;                  % Weight for E->I connections
-wEI = 1.0;                  % Weight for I->E connections
-wII = 1.0;                  % Weight for I->I connections
+wEE = 1;                  % Base weight for E->E connections
+wIE = 1;                  % Weight for E->I connections
+wEI = 1.1;                  % Weight for I->E connections
+wII = 1.1;                  % Weight for I->I connections
 
-% External input weights
-c_out = 1.0;
+%% External input weights
+c_out = 10;
 hE = c_out * sqrt(K) * wEE; % Constant external input for E neurons
-hI = c_out * sqrt(K) * wIE; % Constant external input for I neurons
+% hI = c_out * sqrt(K) * wIE; % Constant external input for I neurons
+hI = 0.8 * c_out * sqrt(K) * wIE; % Constant external input for I neurons
+
+%% Question 1
+alpha_E = wEI / wEE
+alpha_I = wII / wIE
+beta_E = c_out
+beta_I = c_out * 0.8
+r_I = (beta_E - beta_I) / (alpha_E - alpha_I)
+r_E = (beta_E*alpha_I-beta_I*alpha_E)/(alpha_E - alpha_I)
 
 %% Define neuron groups
 E_neurons = 1:N_E;        % Excitatory neurons (1 to 500)
 I_neurons = (N_E+1):N;    % Inhibitory neurons (501 to 1000)
 
 %% Synaptic Connectivity
+
 % Create explicit lists of presynaptic connections for each neuron
 connections_E = cell(N_E, 1);  % Excitatory neurons' presynaptic connections
 connections_I = cell(N_I, 1);  % Inhibitory neurons' presynaptic connections
@@ -99,6 +109,8 @@ end
 
 %% Visualization
 time = (0:steps-1) * dt;
+
+% Population Activity
 plot_mean_r(time, rE_record, rI_record, wEE, wIE, wEI, wII, c_out)
 
 % Raster plot
@@ -117,6 +129,7 @@ ylabel('Neuron Index');
 title('I Population Activity');
 colorbar;
 
+% Prototype
 figure;
 plot(time, rE_record(1,:));
 hold on;
@@ -124,3 +137,7 @@ plot(time, rI_record(1,:));
 xlabel('Time (s)');
 ylabel('r');
 legend("E Neuron 1","I Neuron 1");
+
+%%
+plot_neural_correlations(rE_record)
+plot_neural_correlations(rI_record)
